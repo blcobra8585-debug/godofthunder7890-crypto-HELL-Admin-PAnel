@@ -91,45 +91,10 @@ export default function RealmeEmulator({
   };
 
   return (
-    <div className="relative mx-auto flex flex-col items-center select-none" style={{ width: '360px', height: '760px' }}>
+    <div className="relative w-full h-full flex flex-col select-none bg-black">
       
-      {/* Dynamic light refraction reflection overlays */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent rounded-[44px] pointer-events-none z-40 opacity-40 mix-blend-overlay"></div>
-      
-      {/* Outer Phone Bezel modeling with neon laser-red side-glowing borders */}
-      <div className="absolute inset-0 rounded-[44px] bg-black border-4 border-zinc-900 pointer-events-none z-30 shadow-[0_0_35px_rgba(255,0,51,0.25)] ring-1 ring-zinc-800"></div>
-      
-      {/* Screen container: Force 19.5:9 aspect ratio standard of realme GT 6T */}
-      <div className="absolute inset-[8px] bg-black rounded-[38px] overflow-hidden flex flex-col z-20">
-        
-        {/* Top Status Bar Grid Area */}
-        <div className="h-9 px-6 bg-black flex justify-between items-center z-40 relative shrink-0">
-          {/* Punch-hole camera simulator */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-2.5 w-4 h-4 rounded-full bg-zinc-950 border border-zinc-850 flex items-center justify-center">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-950/80"></div>
-          </div>
-
-          {/* Leftside Status Bar Indicators */}
-          <span className="text-[10px] font-mono text-zinc-400 font-bold tracking-wider">23:17 UTC</span>
-          
-          {/* Rightside Status Bar Indicators */}
-          <div className="flex items-center space-x-1.5 text-zinc-400">
-            <span className="text-[8px] font-mono font-bold tracking-tight bg-zinc-900 px-1 py-0.2 rounded text-cyan-400 border border-cyan-500/20">
-              {status.cellularMode || '5G'}
-            </span>
-            <Wifi className="w-3.5 h-3.5 text-zinc-400" />
-            <div className="flex items-center space-x-0.5">
-              <span className="text-[8px] font-mono">100%</span>
-              <Battery className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500" />
-            </div>
-          </div>
-        </div>
-
-        {/* Dynamic Warning Notification Banner of security level inside the OS */}
-        <div className="bg-repeating-linear bg-[linear-gradient(45deg,#FF0033_10%,#000_10%,#000_20%,#FF0033_20%,#FF0033_30%,#000_30%,#000)] h-1 w-full shrink-0"></div>
-
-        {/* Main Display screen viewport */}
-        <div className="flex-1 min-h-0 bg-black relative flex flex-col">
+      {/* Main Display screen viewport */}
+      <div className="flex-1 w-full h-full bg-black relative flex flex-col">
           {!isAuthenticated ? (
             <LoginScreen onLoginSuccess={onLogin} />
           ) : (
@@ -434,12 +399,6 @@ export default function RealmeEmulator({
             </>
           )}
         </div>
-
-        {/* Bottom Virtual Android gesture bar representing Realme GT 6T UI */}
-        <div className="h-5 bg-black w-full flex items-center justify-center pb-2 z-40 shrink-0">
-          <div className="w-24 h-1 rounded-full bg-zinc-750"></div>
-        </div>
-      </div>
     </div>
   );
 }

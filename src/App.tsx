@@ -5,7 +5,6 @@
 
 import React, { useState } from 'react';
 import RealmeEmulator from './components/RealmeEmulator';
-import ControlConsole from './components/ControlConsole';
 import { SystemConfig, SystemStatus, ApiKeys, StoryPush as StoryPushType, PlayerMetric, RailwayDev, GitHubRepo, SupabaseTable } from './types';
 import { Smartphone, Terminal as TerminalIcon, ShieldAlert, Cpu } from 'lucide-react';
 
@@ -256,129 +255,41 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex flex-col items-center justify-center font-sans tracking-wide py-6 px-4 selection:bg-red-500 selection:text-white relative">
+    <div className="min-h-screen bg-black text-zinc-100 flex flex-col items-center justify-center font-sans tracking-wide selection:bg-red-500 selection:text-white relative w-full h-full">
       {/* Absolute hazard indicator lines */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-repeating-linear bg-[linear-gradient(45deg,#FF0033_25%,#000_25%,#000_50%,#FF0033_50%,#FF0033_75%,#000_75%,#000)] bg-[size:10px_10px] opacity-40"></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-repeating-linear bg-[linear-gradient(45deg,#FF0033_25%,#000_25%,#000_50%,#FF0033_50%,#FF0033_75%,#000_75%,#000)] bg-[size:10px_10px] opacity-40 z-50"></div>
       
       {/* Subtle outer ambient vignette lines */}
-      <div className="absolute inset-0 scanlines opacity-5 pointer-events-none"></div>
+      <div className="absolute inset-0 scanlines opacity-5 pointer-events-none z-0"></div>
 
-      {/* Outer Workspace Shell Wrapper */}
-      <div className="w-full max-w-6xl space-y-6">
-        
-        {/* Workspace Title header bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center bg-zinc-950 p-4 border border-zinc-900 rounded-xl space-y-3.5 md:space-y-0">
-          <div className="flex items-center space-x-3.5">
-            <div className="p-2.5 rounded bg-black border border-red-500/30 text-red-500 shadow-[0_0_15px_rgba(255,0,51,0.25)]">
-              <Cpu className="w-6 h-6 animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-[10px] font-mono bg-red-950/20 text-red-500 border border-red-500/20 px-1 rounded font-bold uppercase tracking-widest animate-pulse">
-                  MASTER PLATFORM
-                </span>
-                <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest leading-none">
-                  V3.0 ACTIVE
-                </span>
-              </div>
-              <h1 className="text-lg font-display font-black tracking-widest text-zinc-100 uppercase">
-                HELL — ULTIMATE MASTER PLAYGROUND
-              </h1>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-6">
-            <div className="text-center md:text-right">
-              <span className="text-[9px] font-mono text-zinc-500 block uppercase">TARGET SYSTEM CONTEXT</span>
-              <span className="text-xs font-mono font-extrabold text-cyan-400">REALME GT 6T (Hell52)</span>
-            </div>
-            <div className="h-8 w-[1px] bg-zinc-900"></div>
-            <div className="text-center md:text-right">
-              <span className="text-[9px] font-mono text-zinc-550 block uppercase">AUTHENTICATION STATE</span>
-              <span className={`text-xs font-mono font-extrabold uppercase ${isAuthenticated ? 'text-emerald-400' : 'text-red-500 animate-pulse'}`}>
-                {isAuthenticated ? 'SUHAN VERIFIED' : 'GUEST RECOIL'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Responsive dual split grid: smartphone frame simulator on the left, cockpit consoles on the right */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
-          {/* Smartphone Simulator area (5 cols on large viewports) */}
-          <div className="lg:col-span-5 flex justify-center py-4">
-            <RealmeEmulator
-              isAuthenticated={isAuthenticated}
-              onLogin={handleLogin}
-              onLogout={handleLogout}
-              activeScreen={activeScreen}
-              setActiveScreen={setActiveScreen}
-              config={config}
-              updateConfig={updateConfig}
-              status={status}
-              onRefreshStatus={handleRefreshStatus}
-              keys={keys}
-              onSaveKeys={saveKeys}
-              history={history}
-              onAddPush={handleAddPush}
-              metrics={metrics}
-              railway={railway}
-              onUpdateEnv={handleUpdateEnv}
-              onAddEnv={handleAddEnv}
-              onDeploy={handleDeploy}
-              github={github}
-              onCommitPush={handleCommitPush}
-              onPull={handlePull}
-              supabaseTables={supabaseTables}
-              onExecuteSql={handleExecuteSql}
-              onToggleOffline={handleToggleOffline}
-              onToggleCellular={handleToggleCellular}
-            />
-
-          </div>
-
-          {/* Master Cockpit diagnostic controls (7 cols on large viewports) */}
-          <div className="lg:col-span-7">
-            {isAuthenticated ? (
-              <ControlConsole
-                status={status}
-                config={config}
-                updateConfig={updateConfig}
-                history={history}
-                activeScreen={activeScreen}
-              />
-            ) : (
-              <div className="bg-zinc-950 border border-zinc-900 rounded-2xl p-8 flex flex-col justify-center items-center text-center space-y-6 h-[760px] relative overflow-hidden">
-                <div className="absolute inset-0 scanlines opacity-5 pointer-events-none"></div>
-                
-                <div className="p-4 rounded-full bg-black border border-red-500/20 text-red-500 animate-flicker">
-                  <ShieldAlert className="w-12 h-12" />
-                </div>
-                
-                <div className="space-y-2 max-w-sm">
-                  <h2 className="text-md font-display font-black text-zinc-200 tracking-wider uppercase">
-                    COCKPIT TERMINAL DEACTIVATED
-                  </h2>
-                  <p className="text-xs font-mono text-zinc-500 leading-normal uppercase">
-                    ESTABLISH SECURITY CLEARANCE VIA THE CURVED REALME GT 6T AMOLED SMARTPHONE FRAME ON THE LEFT TO DECRYPT DIAGNOSTICS & SYSTEM TELEMETRY
-                  </p>
-                </div>
-                
-                <div className="flex items-center space-x-2 text-cyan-400/70 py-1.5 px-3 rounded bg-cyan-950/15 border border-cyan-500/10 font-mono text-[9px] tracking-wider uppercase">
-                  <Smartphone className="w-3.5 h-3.5 animate-pulse" />
-                  <span>Interactive Phone Frame Fully Live</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Footer corporate logo section */}
-        <div className="text-center pt-2">
-          <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest leading-relaxed">
-            DEVELOPED BY LEAD DEV SUHAN FOR SS ENGINEERING CO. © 2026 COGNITIVE GAME ENGINE DEVIATION UNIT. LATEST RE-ROUTE PORT TO 3000 CONSOLE.
-          </p>
-        </div>
+      <div className="w-full h-full flex justify-center z-10 w-full h-[100dvh]">
+        <RealmeEmulator
+          isAuthenticated={isAuthenticated}
+          onLogin={handleLogin}
+          onLogout={handleLogout}
+          activeScreen={activeScreen}
+          setActiveScreen={setActiveScreen}
+          config={config}
+          updateConfig={updateConfig}
+          status={status}
+          onRefreshStatus={handleRefreshStatus}
+          keys={keys}
+          onSaveKeys={saveKeys}
+          history={history}
+          onAddPush={handleAddPush}
+          metrics={metrics}
+          railway={railway}
+          onUpdateEnv={handleUpdateEnv}
+          onAddEnv={handleAddEnv}
+          onDeploy={handleDeploy}
+          github={github}
+          onCommitPush={handleCommitPush}
+          onPull={handlePull}
+          supabaseTables={supabaseTables}
+          onExecuteSql={handleExecuteSql}
+          onToggleOffline={handleToggleOffline}
+          onToggleCellular={handleToggleCellular}
+        />
       </div>
     </div>
   );
