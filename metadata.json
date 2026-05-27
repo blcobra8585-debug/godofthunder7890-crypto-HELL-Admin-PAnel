@@ -1,0 +1,6 @@
+{
+  "name": "HELL Admin Panel",
+  "description": "Premium cyberpunk-industrial horror styled Admin Panel for HELL by SS ENGINEERING, optimized for the Realme GT 6T AMOLED display.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

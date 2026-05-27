@@ -1,0 +1,8 @@
+{
+	"appId": "com.hell.ssengineering",
+	"appName": "HELL",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}
