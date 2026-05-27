@@ -21,6 +21,46 @@ export default function ControlConsole({ status, config, updateConfig, history, 
     "Circuit Breaker Failover routing in standby mode.",
     "Active Connection detected from Realme GT 6T (Device: Hell52)."
   ]);
+  const [isRebooting, setIsRebooting] = useState(false);
+  const [rebootProgress, setRebootProgress] = useState(0);
+
+  const startReboot = () => {
+    setIsRebooting(true);
+    setRebootProgress(0);
+
+    // Audio effect for reboot
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(50, audioCtx.currentTime);
+      osc.frequency.linearRampToValueAtTime(10, audioCtx.currentTime + 1.0);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 1.0);
+    } catch {}
+
+    const intervals = [
+      { p: 15, time: 600 },
+      { p: 42, time: 1300 },
+      { p: 68, time: 2400 },
+      { p: 89, time: 3100 },
+      { p: 100, time: 4000 },
+    ];
+
+    intervals.forEach((step) => {
+      setTimeout(() => {
+        setRebootProgress(step.p);
+        if (step.p === 100) {
+          setTimeout(() => setIsRebooting(false), 500); // Wait a bit at 100% before closing overlay
+        }
+      }, step.time);
+    });
+  };
 
   // Append logs dynamically based on state alterations in other screens
   useEffect(() => {
@@ -115,8 +155,27 @@ export default function ControlConsole({ status, config, updateConfig, history, 
   };
 
   return (
-    <div className="bg-black border border-zinc-900 rounded-2xl p-5 shadow-2xl flex flex-col justify-between h-[760px] relative select-none">
+    <div className={`bg-black border border-zinc-900 rounded-2xl p-5 shadow-2xl flex flex-col justify-between h-[760px] relative select-none ${isRebooting ? 'animate-flicker' : ''}`}>
       
+      {/* Reboot Overlay */}
+      {isRebooting && (
+        <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-8 text-center rounded-2xl">
+          <AlertTriangle className="w-12 h-12 text-red-600 mb-4 animate-ping" />
+          <h2 className="text-xl font-display font-black text-red-500 tracking-widest uppercase mb-6 drop-shadow-[0_0_15px_rgba(239,68,68,0.6)]">
+            SYSTEM CORE REBOOT IN PROGRESS
+          </h2>
+          <div className="w-full max-w-[80%] h-2.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-900 shadow-[inset_0_0_10px_rgba(0,0,0,1)]">
+            <div 
+              className="h-full bg-red-600 transition-all duration-300 shadow-[0_0_15px_rgba(239,68,68,0.8)]" 
+              style={{ width: `${rebootProgress}%` }}
+            ></div>
+          </div>
+          <p className="font-mono text-[9.5px] text-zinc-500 uppercase mt-5 tracking-[0.2em] animate-pulse">
+            REBUILDING KERNEL MEMORY AND HARDWARE HANDSHAKES: <span className="text-red-400 font-bold">{rebootProgress}%</span>
+          </p>
+        </div>
+      )}
+
       {/* Background Grid Pattern */}
       <div className="absolute inset-0 scanlines opacity-10 pointer-events-none rounded-2xl"></div>
 
@@ -131,9 +190,16 @@ export default function ControlConsole({ status, config, updateConfig, history, 
             HELL_OS CORE ENGINE CONTROL
           </h2>
         </div>
-        <div className="text-right font-mono text-[9px] text-zinc-500">
+        <div className="text-right font-mono text-[9px] text-zinc-500 flex flex-col items-end">
           <span className="block text-cyan-400 font-bold uppercase">DEV MODEL: RMX3853</span>
           <span>SYSTEM CHASSIS: ONLINE</span>
+          <button 
+            onClick={startReboot} 
+            disabled={isRebooting}
+            className="mt-1.5 px-2 py-0.5 border border-red-900 text-red-500 hover:text-red-400 bg-red-950/20 hover:bg-red-950/50 rounded uppercase text-[7.5px] font-bold tracking-[0.1em] cursor-pointer transition-all active:scale-95"
+          >
+            SYS REBOOT
+          </button>
         </div>
       </div>
 

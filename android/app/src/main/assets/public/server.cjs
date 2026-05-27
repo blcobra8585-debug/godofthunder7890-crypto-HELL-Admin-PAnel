@@ -28,11 +28,36 @@ var import_dotenv = __toESM(require("dotenv"), 1);
 var import_vite = require("vite");
 var import_supabase_js = require("@supabase/supabase-js");
 var import_genai = require("@google/genai");
+var import_promises = __toESM(require("fs/promises"), 1);
 import_dotenv.default.config();
 async function startServer() {
   const app = (0, import_express.default)();
   const PORT = 3e3;
   app.use(import_express.default.json());
+  const localDbPath = import_path.default.join(process.cwd(), "local_game_data.json");
+  let localDb = {
+    game_config: { hell_mode_enabled: false, mic_zombies_enabled: true },
+    game_logs: []
+  };
+  try {
+    const data = await import_promises.default.readFile(localDbPath, "utf-8");
+    localDb = JSON.parse(data);
+    console.log("Local JSON database initialized.");
+  } catch (err) {
+    if (err.code === "ENOENT") {
+      await import_promises.default.writeFile(localDbPath, JSON.stringify(localDb, null, 2));
+      console.log("Created local JSON database file.");
+    } else {
+      console.error("Failed to read JSON database:", err);
+    }
+  }
+  const saveLocalDb = async () => {
+    try {
+      await import_promises.default.writeFile(localDbPath, JSON.stringify(localDb, null, 2));
+    } catch (err) {
+      console.error("Failed to save local JSON database:", err);
+    }
+  };
   app.post("/api/v1/game-init", async (req, res) => {
     try {
       let configData = null;
@@ -54,8 +79,21 @@ async function startServer() {
           console.warn("Supabase operational connection failed, falling back to local credentials:", dbErr);
         }
       }
-      const hellMode = configData ? configData.hell_mode_enabled ?? false : false;
-      const micZombiesEnabled = configData ? configData.mic_zombies_enabled ?? true : true;
+      let hellMode = false;
+      let micZombiesEnabled = true;
+      if (configData) {
+        hellMode = configData.hell_mode_enabled ?? false;
+        micZombiesEnabled = configData.mic_zombies_enabled ?? true;
+      } else {
+        hellMode = Boolean(localDb.game_config.hell_mode_enabled);
+        micZombiesEnabled = Boolean(localDb.game_config.mic_zombies_enabled);
+      }
+      localDb.game_logs.push({
+        level: "INFO",
+        message: `Game Init requested. HellMode: ${hellMode}`,
+        timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      });
+      await saveLocalDb();
       const apiKey = geminiKey || process.env.GEMINI_API_KEY;
       if (!apiKey) {
         return res.status(500).json({

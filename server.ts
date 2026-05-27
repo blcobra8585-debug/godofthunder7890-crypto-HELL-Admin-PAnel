@@ -4,8 +4,7 @@ import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
 import { createClient } from "@supabase/supabase-js";
 import { GoogleGenAI } from "@google/genai";
-import sqlite3 from "sqlite3";
-import { open, Database } from "sqlite";
+import fs from "fs/promises";
 
 dotenv.config();
 
@@ -15,35 +14,32 @@ async function startServer() {
 
   app.use(express.json());
 
-  let db: Database | null = null;
+  const localDbPath = path.join(process.cwd(), "local_game_data.json");
+  let localDb = {
+    game_config: { hell_mode_enabled: false, mic_zombies_enabled: true },
+    game_logs: [] as any[]
+  };
+
   try {
-    db = await open({
-      filename: path.join(process.cwd(), "local_game_data.sqlite"),
-      driver: sqlite3.Database
-    });
-
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS game_config (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        hell_mode_enabled BOOLEAN DEFAULT 0,
-        mic_zombies_enabled BOOLEAN DEFAULT 1
-      );
-      CREATE TABLE IF NOT EXISTS game_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-        level TEXT,
-        message TEXT
-      );
-    `);
-
-    const configRow = await db.get("SELECT COUNT(*) as count FROM game_config");
-    if (configRow && configRow.count === 0) {
-      await db.run("INSERT INTO game_config (hell_mode_enabled, mic_zombies_enabled) VALUES (0, 1)");
+    const data = await fs.readFile(localDbPath, "utf-8");
+    localDb = JSON.parse(data);
+    console.log("Local JSON database initialized.");
+  } catch (err: any) {
+    if (err.code === "ENOENT") {
+      await fs.writeFile(localDbPath, JSON.stringify(localDb, null, 2));
+      console.log("Created local JSON database file.");
+    } else {
+      console.error("Failed to read JSON database:", err);
     }
-    console.log("Local SQLite database initialized.");
-  } catch (err) {
-    console.error("Failed to initialize SQLite database:", err);
   }
+
+  const saveLocalDb = async () => {
+    try {
+      await fs.writeFile(localDbPath, JSON.stringify(localDb, null, 2));
+    } catch (err) {
+      console.error("Failed to save local JSON database:", err);
+    }
+  };
 
   // API route matching Flask game-init endpoint
   app.post("/api/v1/game-init", async (req, res) => {
@@ -89,21 +85,17 @@ async function startServer() {
       if (configData) {
         hellMode = configData.hell_mode_enabled ?? false;
         micZombiesEnabled = configData.mic_zombies_enabled ?? true;
-      } else if (db) {
-        try {
-          const localConfig = await db.get("SELECT * FROM game_config ORDER BY id DESC LIMIT 1");
-          if (localConfig) {
-            hellMode = Boolean(localConfig.hell_mode_enabled);
-            micZombiesEnabled = Boolean(localConfig.mic_zombies_enabled);
-          }
-        } catch (sqliteErr) {
-          console.error("Local SQLite config read failed:", sqliteErr);
-        }
+      } else {
+        hellMode = Boolean(localDb.game_config.hell_mode_enabled);
+        micZombiesEnabled = Boolean(localDb.game_config.mic_zombies_enabled);
       }
 
-      if (db) {
-        await db.run("INSERT INTO game_logs (level, message) VALUES (?, ?)", ["INFO", `Game Init requested. HellMode: ${hellMode}`]);
-      }
+      localDb.game_logs.push({
+        level: "INFO",
+        message: `Game Init requested. HellMode: ${hellMode}`,
+        timestamp: new Date().toISOString()
+      });
+      await saveLocalDb();
 
       // Call server-side Gemini API using correct @google/genai SDK
       const apiKey = geminiKey || process.env.GEMINI_API_KEY;
